@@ -168,7 +168,7 @@
                       needles: pattern?.needles_mm ? formatNeedles(pattern.needles_mm) : undefined,
                     }"
                     :combo="{
-                      weightLabel: g.isSingleYarn ? 'Selected Yarn' : combinedWeightLabel,
+                      weightLabel: combinedWeightLabel,
                       stsPer10: g.combinedGauge,
                       needles: pattern?.needles_mm ? formatNeedles(pattern.needles_mm) : undefined,
                     }"
