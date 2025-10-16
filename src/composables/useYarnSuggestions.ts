@@ -1,16 +1,30 @@
-import { computed, type ComputedRef } from 'vue'
-import { gaugeCompatibilityScore } from '@/utils/compatibility'
-import { strandsFromPattern } from '@/utils/compatibility'
+import { computed, unref, type MaybeRef } from 'vue'
+import { gaugeCompatibilityScore, strandsFromPattern } from '@/utils/compatibility'
 import type { Pattern, Yarn } from '@/types/domain'
 
+/* =============================================================
+ *  AI-ASSISTED IMPLEMENTATION
+ *  Suggested by Claude 3.5 Sonnet (Anthropic).
+ *
+ *  Reasoning:
+ *  - We accept `pattern` as a MaybeRef<Pattern | undefined> because in our app
+ *    it's a `computed` ref derived from the current route.
+ *  - Using `unref()` ensures the function works with both plain objects and refs.
+ *  - This avoids a subtle bug where the suggestions table would not update
+ *    when navigating between patterns (because Vue wouldn't track `.value` changes).
+ *
+ *  Reviewed manually and verified to preserve reactivity and type safety.
+ * ============================================================= */
 export function useYarnSuggestions(
-  pattern: ComputedRef<Pattern | undefined>,
+  patternRef: MaybeRef<Pattern | undefined>,
   yarns: Yarn[],
   topN = 5,
 ) {
   const columns = computed(() => {
-    if (!pattern.value) return []
-    const strands = strandsFromPattern(pattern.value)
+    const pattern = unref(patternRef) // ✅ unwraps ref or passes plain object
+    if (!pattern) return []
+
+    const strands = strandsFromPattern(pattern)
     return strands.map((strand) => {
       const ranked = yarns
         .map((y) => ({
@@ -21,7 +35,8 @@ export function useYarnSuggestions(
         }))
         .sort((a, b) => b.score - a.score)
         .slice(0, topN)
-      return { label: strand.label, suggestions: ranked }
+
+      return { label: strand.label, targetGauge: strand.gauge_sts_per_10cm, suggestions: ranked }
     })
   })
 
