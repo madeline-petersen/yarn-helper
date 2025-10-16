@@ -37,13 +37,14 @@ export function describePatternNatural(p: Pattern): string {
   const typicalNeedle = YARN_WEIGHT_INFO[weight]?.needle
   const { article, verb } = articleAndVerb(p.category)
   const noun = p.category.toLowerCase()
+  const indefiniteArticle = /^[aeiou]/i.test(weight) ? 'an' : 'a'
 
   // Only use "holding together" if there are actually multiple yarns
   const hasMultipleYarns = p.held_with && p.held_with.length > 1
   const first =
     hasMultipleYarns && combo
-      ? `${article} ${noun} ${verb} knit by holding ${combo} together, which makes them behave like a ${weight}-weight yarn.`
-      : `${article} ${noun} ${verb} knit using a ${weight}-weight yarn.`
+      ? `${article} ${noun} ${verb} knit by holding ${combo} together, which makes them behave like ${indefiniteArticle} ${weight}-weight yarn.`
+      : `${article} ${noun} ${verb} knit using ${indefiniteArticle} ${weight}-weight yarn.`
 
   let needleComparison = ''
   if (
