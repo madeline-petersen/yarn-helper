@@ -91,17 +91,21 @@ export function useWeightInsights(
     let detail = ''
     let matchLevel: 'exact' | 'close' | 'off'
 
+    const isSingleYarn = selectedLabeled.length === 1
+    const yarnText = isSingleYarn ? 'yarn' : 'yarns'
+    const togetherText = isSingleYarn ? '' : 'held together, '
+
     if (patternIndex === combinedIndex) {
       headline = `${weightDescription} = ${combinedWeight} — matches the pattern target (${patternWeight}).`
-      detail = `Held together, your selected yarns behave like ${combinedWeight}, which aligns with the pattern's ${patternWeight} weight.`
+      detail = `${togetherText}Your selected ${yarnText} behave like ${combinedWeight}, which aligns with the pattern's ${patternWeight} weight.`
       matchLevel = 'exact'
     } else if (Math.abs(patternIndex - combinedIndex) === 1) {
       const direction = combinedIndex > patternIndex ? 'heavier' : 'lighter'
       headline = `${weightDescription} = ${combinedWeight} — a bit ${direction} than the pattern target (${patternWeight}).`
       if (combinedIndex > patternIndex) {
-        detail = `Held together, these yarns tend toward ${combinedWeight}. Expect a slightly thicker, denser fabric than the pattern's ${patternWeight} target.`
+        detail = `${togetherText}These ${yarnText} tend toward ${combinedWeight}. Expect a slightly thicker, denser fabric than the pattern's ${patternWeight} target.`
       } else {
-        detail = `Held together, these yarns tend toward ${combinedWeight}. Expect a slightly lighter, more fluid fabric than the pattern's ${patternWeight} target.`
+        detail = `${togetherText}These ${yarnText} tend toward ${combinedWeight}. Expect a slightly lighter, more fluid fabric than the pattern's ${patternWeight} target.`
       }
       matchLevel = 'close'
     } else {
@@ -109,9 +113,9 @@ export function useWeightInsights(
       const severity = Math.abs(patternIndex - combinedIndex) > 2 ? 'much' : 'noticeably'
       headline = `${weightDescription} = ${combinedWeight} — ${severity} ${direction} than the pattern target (${patternWeight}).`
       if (combinedIndex > patternIndex) {
-        detail = `Held together, these yarns behave like ${combinedWeight}. The fabric will be ${severity} thicker and denser than intended. Swatch to confirm drape and structure.`
+        detail = `${togetherText}These ${yarnText} behave like ${combinedWeight}. The fabric will be ${severity} thicker and denser than intended. Swatch to confirm drape and structure.`
       } else {
-        detail = `Held together, these yarns behave like ${combinedWeight}. The fabric will be ${severity} lighter and more fluid than intended. Swatch to check drape and structure.`
+        detail = `${togetherText}These ${yarnText} behave like ${combinedWeight}. The fabric will be ${severity} lighter and more fluid than intended. Swatch to check drape and structure.`
       }
       matchLevel = 'off'
     }

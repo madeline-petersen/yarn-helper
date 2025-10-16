@@ -118,7 +118,13 @@
         <div class="insights-content">
           <!-- Selected Strands -->
           <div v-if="isSelectionComplete" class="selected-strands">
-            <h3>Your Selected Strands</h3>
+            <h3>
+              {{
+                Object.keys(selectedYarns).length === 1
+                  ? 'Your Selected Strand'
+                  : 'Your Selected Strands'
+              }}
+            </h3>
             <div class="selected-yarns-grid">
               <div
                 v-for="(yarn, columnLabel) in selectedYarns"
