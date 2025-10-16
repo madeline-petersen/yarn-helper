@@ -19,7 +19,7 @@ describe('describePatternNatural', () => {
   it('describes single-strand DK with typical gauge/needles', () => {
     const s = describePatternNatural({ ...base })
     expect(s).toMatch(/This cardigan is knit using a DK-weight yarn\./)
-    expect(s).toMatch(/uses 3\.8–4\.0 mm needles/)
+    expect(s).toMatch(/uses 3\.8 mm and 4\.0 mm needles/)
     expect(s).toMatch(/gauge of 22 sts per 10 cm — typical for DK-weight yarn\./)
   })
 

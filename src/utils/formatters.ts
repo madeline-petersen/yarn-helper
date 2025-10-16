@@ -11,8 +11,8 @@ export function formatGauge(sts: number): string {
 /**
  * Format needle sizes:
  * - [3.0] → "3.0 mm"
- * - [2.5, 3.0] → "2.5–3.0 mm"
- * - [2.0, 2.5, 3.0] → "2.0–3.0 mm"
+ * - [2.5, 3.0] → "2.5 mm, 3.0 mm"
+ * - [2.0, 2.5, 3.0] → "2.0 mm, 2.5 mm, 3.0 mm"
  * - [] → "—"
  */
 export function formatNeedles(
@@ -24,7 +24,7 @@ export function formatNeedles(
   const fmt = (n: number) => n.toFixed(opts.decimals ?? 1)
 
   if (uniq.length === 1) return `${fmt(uniq[0]!)} mm`
-  return `${fmt(uniq[0]!)}–${fmt(uniq[uniq.length - 1]!)} mm`
+  return uniq.map(fmt).join(' mm and ') + ' mm'
 }
 
 /**

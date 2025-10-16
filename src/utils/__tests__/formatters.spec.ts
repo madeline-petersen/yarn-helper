@@ -11,12 +11,12 @@ describe('formatNeedles', () => {
     expect(formatNeedles([3])).toBe('3.0 mm')
   })
 
-  it('formats a range of needles', () => {
-    expect(formatNeedles([2.5, 3.0])).toBe('2.5–3.0 mm')
+  it('formats multiple needle sizes', () => {
+    expect(formatNeedles([2.5, 3.0])).toBe('2.5 mm and 3.0 mm')
   })
 
   it('sorts and deduplicates needles', () => {
-    expect(formatNeedles([3.0, 2.5, 3.0])).toBe('2.5–3.0 mm')
+    expect(formatNeedles([3.0, 2.5, 3.0])).toBe('2.5 mm and 3.0 mm')
   })
 
   it('returns an em dash when no needles', () => {
