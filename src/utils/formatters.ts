@@ -1,4 +1,5 @@
 // Type-safe formatters for small display helpers
+import type { Pattern } from '@/types/domain'
 
 /**
  * Format gauge: e.g. 22 -> "22 sts per 10 cm"
@@ -34,4 +35,34 @@ export function formatNeedles(
  */
 export function capitalize(s: string | undefined): string | undefined {
   return s ? s[0]!.toUpperCase() + s.slice(1) : s
+}
+
+/**
+ * Format held-together yarns:
+ * - undefined → null
+ * - [] → null
+ * - [{weight: "DK"}] → "DK"
+ * - [{weight: "DK", fiber_hint: "mohair"}] → "DK (mohair)"
+ * - [{weight: "DK"}, {weight: "Lace"}] → "DK + Lace"
+ */
+export function formatHeldCombo(p: Pattern): string | null {
+  if (!p.held_with?.length) return null
+  const strands = p.held_with
+    .map((s) => s.weight + (s.fiber_hint ? ` (${s.fiber_hint})` : ''))
+    .filter(Boolean)
+  return strands.length ? strands.join(' + ') : null
+}
+
+/**
+ * Join strings into a sentence:
+ * - [] → ""
+ * - ["Hello"] → "Hello."
+ * - ["Hello", "world"] → "Hello world."
+ * - ["Hello!", "World"] → "Hello! World."
+ */
+export function sentenceJoin(parts: Array<string | null | undefined>): string {
+  // join with spaces, trim duplicate whitespace, ensure terminal period
+  const s = parts.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim()
+  if (!s) return ''
+  return /[.!?]$/.test(s) ? s : s + '.'
 }

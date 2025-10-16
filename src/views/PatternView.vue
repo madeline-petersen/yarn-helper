@@ -8,6 +8,7 @@
 
     <div v-if="pattern">
       <h1 class="pattern-title">{{ pattern.name }}</h1>
+      <p class="pattern-description">{{ describePatternNatural(pattern) }}</p>
       <div class="pattern-details">
         <div class="pattern-image">
           <figure>
@@ -63,6 +64,7 @@
 
 <script setup lang="ts">
 import { formatGauge, formatNeedles, capitalize } from '@/utils/formatters'
+import { describePatternNatural } from '@/composables/describePatternNatural'
 import { computed, watchEffect, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import patterns from '@/data/patterns'
@@ -124,8 +126,15 @@ onUnmounted(() => {
 
 .pattern-title {
   color: var(--color-heading);
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   text-align: left;
+}
+
+.pattern-description {
+  color: var(--color-text);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
 }
 
 .pattern-image {
