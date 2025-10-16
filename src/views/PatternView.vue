@@ -57,30 +57,86 @@
       <!-- Yarn Suggestions -->
       <div v-if="columns.length > 0" class="yarn-suggestions">
         <h2>Compatible Yarn Suggestions</h2>
-        <table class="yarn-table">
-          <caption class="sr-only">
-            Compatible yarn suggestions by strand
-          </caption>
-          <thead>
-            <tr>
-              <th v-for="col in columns" :key="col.label" scope="col">
-                {{ col.label }} (target: {{ col.targetGauge }} sts/10cm)
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in maxRows" :key="row">
-              <td v-for="col in columns" :key="col.label">
-                <template v-if="col.suggestions[row - 1]">
-                  <strong>{{ col.suggestions[row - 1]?.name }}</strong>
-                  <div>{{ col.suggestions[row - 1]?.gauge_sts_per_10cm }} sts/10cm</div>
-                  <div>Score: {{ col.suggestions[row - 1]?.score }}</div>
-                </template>
-                <template v-else>—</template>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="selection-header">
+          <p class="selection-guidance">
+            {{
+              columns.length === 1
+                ? 'Select a yarn to see insights'
+                : 'Select one yarn from each column to see insights'
+            }}
+          </p>
+          <button
+            v-if="Object.keys(selectedYarns).length > 0"
+            @click="clearSelection"
+            class="clear-all-link"
+          >
+            Clear all
+          </button>
+        </div>
+
+        <div class="yarn-columns">
+          <div v-for="col in columns" :key="col.label" class="yarn-column">
+            <h3 :id="`col-${col.label}`">
+              {{ col.label }} (target: {{ col.targetGauge }} sts/10cm)
+            </h3>
+            <div role="radiogroup" :aria-labelledby="`col-${col.label}`" class="yarn-options">
+              <button
+                v-for="suggestion in col.suggestions"
+                :key="suggestion.id"
+                type="button"
+                class="yarn-option"
+                :class="{
+                  selected: selectedYarns[col.label]?.id === suggestion.id,
+                  clickable: true,
+                }"
+                @click="selectYarn(col.label, suggestion)"
+                role="radio"
+                :aria-checked="selectedYarns[col.label]?.id === suggestion.id"
+                :aria-label="`${suggestion.name}, ${suggestion.gauge_sts_per_10cm} sts per 10 cm, score ${suggestion.score}. Select for ${col.label}`"
+              >
+                <strong>{{ suggestion.name }}</strong>
+                <div>{{ suggestion.gauge_sts_per_10cm }} sts/10cm</div>
+                <div>Score: {{ suggestion.score }}</div>
+              </button>
+              <div v-if="col.suggestions.length === 0" class="empty-column">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selection status announcer -->
+      <div id="selection-status" role="status" aria-live="polite" class="sr-only"></div>
+
+      <!-- Yarn Selection Insights -->
+      <div v-if="isSelectionComplete" id="yarn-insights" class="yarn-insights">
+        <div class="insights-header">
+          <h2 ref="insightsHeadingRef" tabindex="-1">Your Yarn Selection Insights</h2>
+        </div>
+        <div class="insights-content">
+          <div
+            v-for="(yarn, columnLabel) in selectedYarns"
+            :key="columnLabel"
+            class="selected-yarn"
+          >
+            <h3>{{ columnLabel }}</h3>
+            <div class="yarn-details">
+              <strong>{{ yarn?.name }}</strong>
+              <div>{{ yarn?.gauge_sts_per_10cm }} sts/10cm</div>
+              <div>Compatibility Score: {{ yarn?.score }}</div>
+            </div>
+          </div>
+
+          <div class="insights-summary">
+            <h3>Summary</h3>
+            <p>
+              You've selected yarns for all required strands. Review the compatibility scores before
+              deciding.
+            </p>
+            <div class="summary-actions">
+              <button @click="clearSelection" class="clear-selection">Clear selection</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div v-else class="error" role="alert">
@@ -94,7 +150,7 @@
 <script setup lang="ts">
 import { formatGauge, formatNeedles, capitalize } from '@/utils/formatters'
 import { describePatternNatural } from '@/composables/describePatternNatural'
-import { computed, watchEffect, onUnmounted } from 'vue'
+import { ref, computed, watchEffect, nextTick, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import patterns from '@/data/patterns'
 import yarns from '@/data/yarns'
@@ -106,7 +162,51 @@ const id = computed(() => Number(route.params.id))
 const pattern = computed<Pattern | undefined>(() => patterns.find((p) => p.id === id.value))
 
 // Yarn suggestions
-const { columns, maxRows } = useYarnSuggestions(pattern, yarns, 5)
+const { columns } = useYarnSuggestions(pattern, yarns, 5)
+
+// Yarn selection state
+type Suggestion = { id: number; name: string; gauge_sts_per_10cm: number; score: number }
+const selectedYarns = ref<Record<string, Suggestion | undefined>>({})
+
+const isSelectionComplete = computed(
+  () => columns.value.length > 0 && columns.value.every((col) => !!selectedYarns.value[col.label]),
+)
+
+function selectYarn(columnLabel: string, yarn: Suggestion) {
+  selectedYarns.value[columnLabel] = yarn
+  const status = document.getElementById('selection-status')
+  if (status) status.textContent = `Selected ${yarn.name} for ${columnLabel}.`
+}
+
+function clearSelection() {
+  selectedYarns.value = {}
+  const status = document.getElementById('selection-status')
+  if (status) status.textContent = 'Selection cleared.'
+}
+
+const insightsHeadingRef = ref<HTMLElement | null>(null)
+
+watchEffect(async () => {
+  if (isSelectionComplete.value) {
+    await nextTick()
+    const el = document.getElementById('yarn-insights')
+    if (el) {
+      // Smooth scroll to the insights section
+      el.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest',
+      })
+
+      // Wait for scroll to complete before focusing
+      setTimeout(() => {
+        insightsHeadingRef.value?.focus()
+        const status = document.getElementById('selection-status')
+        if (status) status.textContent = 'Selection complete.'
+      }, 500) // Wait 500ms for smooth scroll to complete
+    }
+  }
+})
 
 // Store default title and update when pattern changes
 const defaultTitle = document.title
@@ -124,7 +224,7 @@ onUnmounted(() => {
 
 <style scoped>
 .pattern-view {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -169,6 +269,7 @@ onUnmounted(() => {
   font-size: 1.1rem;
   line-height: 1.6;
   margin-bottom: 2rem;
+  max-width: 600px;
 }
 
 .pattern-image {
@@ -198,6 +299,7 @@ onUnmounted(() => {
 
 .pattern-info h2 {
   margin-top: 0;
+  margin-bottom: 1.5rem;
   color: var(--color-heading);
 }
 
@@ -361,57 +463,68 @@ onUnmounted(() => {
 
 .yarn-suggestions h2 {
   color: var(--color-heading);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
-.yarn-table {
+.selection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
   width: 100%;
-  border-collapse: collapse;
+}
+
+.selection-guidance {
+  color: var(--color-text);
+  margin: 0;
+  text-align: left;
+}
+
+.clear-all-link {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.clear-all-link:hover {
+  color: var(--color-heading);
+}
+
+/* Yarn columns layout */
+.yarn-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
   background: var(--color-background-soft);
+  padding: 1.5rem;
   border-radius: 8px;
-  overflow: hidden;
   border: 1px solid var(--color-border);
 }
 
-.yarn-table th {
+.yarn-column h3 {
+  color: var(--color-heading);
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.yarn-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.empty-column {
+  text-align: center;
+  padding: 1rem;
+  color: var(--color-text);
   background: var(--color-background-mute);
-  color: var(--color-heading);
-  font-weight: 600;
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.yarn-table td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--color-border);
-  vertical-align: top;
-}
-
-.yarn-table td:last-child {
-  border-right: none;
-}
-
-.yarn-table tr:last-child td {
-  border-bottom: none;
-}
-
-.yarn-table strong {
-  color: var(--color-heading);
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-.yarn-table div {
-  color: var(--color-text);
-  font-size: 0.875rem;
-  margin-bottom: 0.125rem;
-}
-
-.yarn-table div:last-child {
-  margin-bottom: 0;
-  font-weight: 500;
-  color: var(--color-text);
+  border-radius: 8px;
 }
 
 /* Screen reader only content */
@@ -427,15 +540,157 @@ onUnmounted(() => {
   border: 0;
 }
 
-/* Responsive table */
-@media (max-width: 768px) {
-  .yarn-table {
-    font-size: 0.875rem;
-  }
+/* Yarn selection buttons */
+.yarn-option {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+}
 
-  .yarn-table th,
-  .yarn-table td {
-    padding: 0.75rem 0.5rem;
+@media (max-width: 320px) {
+  .yarn-option {
+    padding: 0.75rem;
+  }
+}
+
+.yarn-option:hover {
+  border-color: var(--color-border-hover);
+  background: var(--color-background-soft);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.yarn-option:focus-visible {
+  outline: none;
+  border-color: var(--color-border-hover);
+  box-shadow: 0 0 0 3px rgba(0, 95, 204, 0.25);
+}
+
+.yarn-option.selected {
+  border-color: var(--color-text);
+  background: var(--color-background-mute);
+  box-shadow: 0 0 0 2px rgba(0, 95, 204, 0.2);
+}
+
+.yarn-option strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--color-heading);
+}
+
+.yarn-option div {
+  color: var(--color-text);
+  font-size: 0.875rem;
+  margin-bottom: 0.125rem;
+}
+
+/* Yarn insights section */
+.yarn-insights {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: var(--color-background-soft);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  scroll-margin-top: 2rem;
+}
+
+.insights-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.insights-header h2 {
+  color: var(--color-heading);
+  margin: 0;
+}
+
+.insights-header h2:focus {
+  outline: none;
+}
+
+.clear-selection {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-background);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.clear-selection:hover {
+  background: var(--color-background-mute);
+  border-color: var(--color-border-hover);
+}
+
+.insights-content {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.selected-yarn {
+  padding: 1rem;
+  background: var(--color-background);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.selected-yarn h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-heading);
+  font-size: 1rem;
+}
+
+.yarn-details strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--color-heading);
+}
+
+.yarn-details div {
+  color: var(--color-text);
+  font-size: 0.875rem;
+  margin-bottom: 0.125rem;
+}
+
+.insights-summary {
+  padding: 1rem;
+  background: var(--color-background-mute);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.insights-summary h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-heading);
+}
+
+.insights-summary p {
+  margin: 0;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.summary-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .yarn-columns {
+    grid-template-columns: 1fr;
   }
 }
 </style>
