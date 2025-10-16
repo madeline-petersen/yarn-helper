@@ -53,6 +53,35 @@
           </div>
         </div>
       </div>
+
+      <!-- Yarn Suggestions -->
+      <div v-if="columns.length > 0" class="yarn-suggestions">
+        <h2>Compatible Yarn Suggestions</h2>
+        <table class="yarn-table">
+          <caption class="sr-only">
+            Compatible yarn suggestions by strand
+          </caption>
+          <thead>
+            <tr>
+              <th v-for="col in columns" :key="col.label" scope="col">
+                {{ col.label }} (target: {{ col.targetGauge }} sts/10cm)
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in maxRows" :key="row">
+              <td v-for="col in columns" :key="col.label">
+                <template v-if="col.suggestions[row - 1]">
+                  <strong>{{ col.suggestions[row - 1]?.name }}</strong>
+                  <div>{{ col.suggestions[row - 1]?.gauge_sts_per_10cm }} sts/10cm</div>
+                  <div>Score: {{ col.suggestions[row - 1]?.score }}</div>
+                </template>
+                <template v-else>—</template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
     <div v-else class="error" role="alert">
       <h1>Pattern Not Found</h1>
@@ -68,11 +97,16 @@ import { describePatternNatural } from '@/composables/describePatternNatural'
 import { computed, watchEffect, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import patterns from '@/data/patterns'
+import yarns from '@/data/yarns'
+import { useYarnSuggestions } from '@/composables/useYarnSuggestions'
 import type { Pattern } from '@/types/domain'
 
 const route = useRoute()
 const id = computed(() => Number(route.params.id))
 const pattern = computed<Pattern | undefined>(() => patterns.find((p) => p.id === id.value))
+
+// Yarn suggestions
+const { columns, maxRows } = useYarnSuggestions(pattern, yarns, 5)
 
 // Store default title and update when pattern changes
 const defaultTitle = document.title
@@ -315,6 +349,93 @@ onUnmounted(() => {
   .pattern-image {
     width: 400px;
     margin: 0;
+  }
+}
+
+/* Yarn Suggestions */
+.yarn-suggestions {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.yarn-suggestions h2 {
+  color: var(--color-heading);
+  margin-bottom: 1.5rem;
+}
+
+.yarn-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-background-soft);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.yarn-table th {
+  background: var(--color-background-mute);
+  color: var(--color-heading);
+  font-weight: 600;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.yarn-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.yarn-table td:last-child {
+  border-right: none;
+}
+
+.yarn-table tr:last-child td {
+  border-bottom: none;
+}
+
+.yarn-table strong {
+  color: var(--color-heading);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.yarn-table div {
+  color: var(--color-text);
+  font-size: 0.875rem;
+  margin-bottom: 0.125rem;
+}
+
+.yarn-table div:last-child {
+  margin-bottom: 0;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+  .yarn-table {
+    font-size: 0.875rem;
+  }
+
+  .yarn-table th,
+  .yarn-table td {
+    padding: 0.75rem 0.5rem;
   }
 }
 </style>
