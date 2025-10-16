@@ -95,7 +95,10 @@
                 :aria-label="`${suggestion.name}, ${suggestion.gauge_sts_per_10cm} sts per 10 cm, score ${suggestion.score}. Select for ${col.label}`"
               >
                 <strong>{{ suggestion.name }}</strong>
-                <div>{{ suggestion.gauge_sts_per_10cm }} sts/10cm</div>
+                <div>
+                  {{ suggestion.gauge_sts_per_10cm }} sts/10cm
+                  <span v-if="suggestion.weight"> • {{ suggestion.weight }}</span>
+                </div>
                 <div>Score: {{ suggestion.score }}</div>
               </button>
               <div v-if="col.suggestions.length === 0" class="empty-column">—</div>
@@ -110,26 +113,45 @@
       <!-- Yarn Selection Insights -->
       <div v-if="isSelectionComplete" id="yarn-insights" class="yarn-insights">
         <div class="insights-header">
-          <h2 ref="insightsHeadingRef" tabindex="-1">Your Yarn Selection Insights</h2>
+          <h2 ref="insightsHeadingRef" tabindex="-1">🧶 Your Yarn Selection Insights 🧶</h2>
         </div>
         <div class="insights-content">
-          <div
-            v-for="(yarn, columnLabel) in selectedYarns"
-            :key="columnLabel"
-            class="selected-yarn"
-          >
-            <h3>{{ columnLabel }}</h3>
-            <div class="yarn-details">
-              <strong>{{ yarn?.name }}</strong>
-              <div>{{ yarn?.gauge_sts_per_10cm }} sts/10cm</div>
-              <div>Compatibility Score: {{ yarn?.score }}</div>
+          <!-- Selected Strands -->
+          <div v-if="isSelectionComplete" class="selected-strands">
+            <h3>Your Selected Strands</h3>
+            <div class="selected-yarns-grid">
+              <div
+                v-for="(yarn, columnLabel) in selectedYarns"
+                :key="columnLabel"
+                class="selected-yarn"
+              >
+                <h3>
+                  {{ columnLabel }} (target:
+                  {{ columns.find((col) => col.label === columnLabel)?.targetGauge }} sts/10cm)
+                </h3>
+                <div class="yarn-details">
+                  <strong>{{ yarn?.name }}</strong>
+                  <div>
+                    {{ yarn?.gauge_sts_per_10cm }} sts/10cm
+                    <span v-if="yarn?.weight"> • {{ yarn?.weight }}</span>
+                  </div>
+                  <div>Compatibility Score: {{ yarn?.score }}</div>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <!-- Weight Analysis -->
+          <div v-if="isSelectionComplete" class="weight-analysis">
+            <h3>Weight Analysis</h3>
+            <p>{{ weightInsight.headline }}</p>
+            <p>{{ weightInsight.detail }}</p>
           </div>
 
           <!-- Gauge Insights -->
           <div v-if="gaugeInsights.length > 0" class="gauge-insights">
             <div v-for="g in gaugeInsights" :key="g.headline" class="gauge-analysis">
-              <h3 class="compatibility-headline">{{ g.headline }}</h3>
+              <h3 class="compatibility-headline">Gauge Analysis</h3>
 
               <div class="gauge-summary">
                 <div class="gauge-simulation">
@@ -140,7 +162,7 @@
                       needles: pattern?.needles_mm ? formatNeedles(pattern.needles_mm) : undefined,
                     }"
                     :combo="{
-                      weightLabel: g.isSingleYarn ? 'Selected Yarn' : 'Combined Yarns',
+                      weightLabel: g.isSingleYarn ? 'Selected Yarn' : combinedWeightLabel,
                       stsPer10: g.combinedGauge,
                       needles: pattern?.needles_mm ? formatNeedles(pattern.needles_mm) : undefined,
                     }"
@@ -177,16 +199,33 @@
             </div>
           </div>
 
+          <!-- Fabric Analysis -->
+          <div v-if="isSelectionComplete" class="fabric-analysis">
+            <h3>Fabric Analysis</h3>
+            <p>Fabric analysis coming soon...</p>
+          </div>
+
+          <!-- Skein Analysis -->
+          <div v-if="isSelectionComplete" class="skein-analysis">
+            <h3>Skein Analysis</h3>
+            <p>Skein analysis coming soon...</p>
+          </div>
+
           <div class="insights-summary">
             <h3>Summary</h3>
-            <p>
-              You've selected yarns for all required strands. Review the compatibility scores before
-              deciding.
-            </p>
 
-            <div class="summary-actions">
-              <button @click="clearSelection" class="clear-selection">Clear selection</button>
+            <div v-if="isSelectionComplete" class="analysis-summary">
+              <div class="summary-item">
+                <strong>Weight:</strong> {{ weightInsight.headline.split(' — ')[0] }}
+              </div>
+              <div v-if="gaugeInsights.length > 0" class="summary-item">
+                <strong>Gauge:</strong> {{ gaugeInsights[0].headline }}
+              </div>
             </div>
+          </div>
+
+          <div class="summary-actions">
+            <button @click="clearSelection" class="clear-selection">Clear selection</button>
           </div>
         </div>
       </div>
@@ -208,6 +247,7 @@ import patterns from '@/data/patterns'
 import yarns from '@/data/yarns'
 import { useYarnSuggestions } from '@/composables/useYarnSuggestions'
 import { useGaugeInsights } from '@/composables/useGaugeInsights'
+import { useWeightInsights } from '@/composables/useWeightInsights'
 import GaugePreviewSvg from '@/components/GaugePreviewSvg.vue'
 import type { Pattern } from '@/types/domain'
 
@@ -219,9 +259,23 @@ const pattern = computed<Pattern | undefined>(() => patterns.find((p) => p.id ==
 const { columns } = useYarnSuggestions(pattern, yarns, 5)
 
 // Yarn selection state
-type Suggestion = { id: number; name: string; gauge_sts_per_10cm: number; score: number }
+type Suggestion = {
+  id: number
+  name: string
+  weight: string
+  gauge_sts_per_10cm: number
+  score: number
+}
 const selectedYarns = ref<Record<string, Suggestion | undefined>>({})
 const { perColumn: gaugeInsights, overall: gaugeOverall } = useGaugeInsights(pattern, selectedYarns)
+const { weightInsight } = useWeightInsights(pattern, selectedYarns)
+
+// Extract the combined weight from the weight insight for display
+const combinedWeightLabel = computed(() => {
+  if (!weightInsight.value?.headline) return 'Combined Yarns'
+  const match = weightInsight.value.headline.match(/= ([^—]+)/)
+  return match ? match[1]!.trim() : 'Combined Yarns'
+})
 
 const isSelectionComplete = computed(
   () => columns.value.length > 0 && columns.value.every((col) => !!selectedYarns.value[col.label]),
@@ -657,7 +711,7 @@ onUnmounted(() => {
 
 .insights-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 1.5rem;
 }
@@ -665,6 +719,7 @@ onUnmounted(() => {
 .insights-header h2 {
   color: var(--color-heading);
   margin: 0;
+  text-align: center;
 }
 
 .insights-header h2:focus {
@@ -691,6 +746,28 @@ onUnmounted(() => {
 .insights-content {
   display: grid;
   gap: 1.5rem;
+}
+
+.selected-strands {
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.selected-strands h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.selected-yarns-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .selected-yarn {
@@ -751,6 +828,73 @@ onUnmounted(() => {
   font-weight: normal;
 }
 
+.weight-analysis {
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.weight-analysis h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.weight-analysis p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.weight-analysis p + p {
+  margin-top: 0.5rem;
+}
+
+.fabric-analysis {
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.fabric-analysis h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.fabric-analysis p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.skein-analysis {
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.skein-analysis h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.skein-analysis p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
 .gauge-simulation {
   margin: 1rem 0;
 }
@@ -805,12 +949,28 @@ onUnmounted(() => {
 .insights-summary h3 {
   margin: 0 0 0.5rem 0;
   color: var(--color-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .insights-summary p {
   margin: 0;
   color: var(--color-text);
   line-height: 1.5;
+}
+
+.analysis-summary {
+  margin: 1rem 0;
+}
+
+.summary-item {
+  margin: 0.25rem 0;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.summary-item strong {
+  color: var(--color-heading);
 }
 
 .summary-actions {
@@ -822,6 +982,10 @@ onUnmounted(() => {
 /* Responsive layout */
 @media (max-width: 768px) {
   .yarn-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .selected-yarns-grid {
     grid-template-columns: 1fr;
   }
 }

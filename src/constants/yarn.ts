@@ -5,6 +5,19 @@ export interface YarnWeightInfo {
   needle: readonly [number, number] // mm
 }
 
+// Weight hierarchy from lightest to heaviest
+export const WEIGHT_HIERARCHY: readonly YarnWeight[] = [
+  'Lace',
+  'Light Fingering',
+  'Fingering',
+  'Sport',
+  'DK',
+  'Worsted',
+  'Aran',
+  'Bulky',
+  'Super Bulky',
+] as const
+
 export const YARN_WEIGHT_INFO = {
   Lace: { gauge: [32, 34], needle: [1.5, 2.5] },
   'Light Fingering': { gauge: [28, 30], needle: [2.0, 3.0] },

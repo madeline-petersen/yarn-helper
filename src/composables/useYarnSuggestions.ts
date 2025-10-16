@@ -30,6 +30,7 @@ export function useYarnSuggestions(
         .map((y) => ({
           id: y.id,
           name: y.name,
+          weight: y.weight,
           gauge_sts_per_10cm: y.gauge_sts_per_10cm,
           score: gaugeCompatibilityScore(strand.gauge_sts_per_10cm, y.gauge_sts_per_10cm),
         }))
