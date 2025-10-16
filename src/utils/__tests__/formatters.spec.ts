@@ -15,6 +15,11 @@ describe('formatNeedles', () => {
     expect(formatNeedles([2.5, 3.0])).toBe('2.5 mm and 3.0 mm')
   })
 
+  it('formats three or more needle sizes with commas and and', () => {
+    expect(formatNeedles([2.0, 2.5, 3.0])).toBe('2.0 mm, 2.5 mm and 3.0 mm')
+    expect(formatNeedles([2.0, 2.5, 3.0, 3.5])).toBe('2.0 mm, 2.5 mm, 3.0 mm and 3.5 mm')
+  })
+
   it('sorts and deduplicates needles', () => {
     expect(formatNeedles([3.0, 2.5, 3.0])).toBe('2.5 mm and 3.0 mm')
   })

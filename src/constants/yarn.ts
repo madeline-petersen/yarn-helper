@@ -7,6 +7,7 @@ export interface YarnWeightInfo {
 
 export const YARN_WEIGHT_INFO = {
   Lace: { gauge: [32, 34], needle: [1.5, 2.5] },
+  'Light Fingering': { gauge: [28, 30], needle: [2.0, 3.0] },
   Fingering: { gauge: [26, 28], needle: [2.25, 3.25] },
   Sport: { gauge: [24, 26], needle: [3.0, 3.5] },
   DK: { gauge: [22, 24], needle: [3.75, 4.5] },

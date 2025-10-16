@@ -1,5 +1,6 @@
 export type YarnWeight =
   | 'Lace'
+  | 'Light Fingering'
   | 'Fingering'
   | 'Sport'
   | 'DK'
@@ -26,4 +27,19 @@ export interface Pattern {
   tags: string[]
   photo_url: string
   held_with: HeldStrand[]
+}
+
+export interface Fiber {
+  name: string
+  percent: number
+}
+
+export interface Yarn {
+  id: number
+  name: string
+  weight: YarnWeight
+  gauge_sts_per_10cm: number
+  yardage_per_skein: number
+  grams_per_skein: number
+  fibers: Fiber[]
 }
