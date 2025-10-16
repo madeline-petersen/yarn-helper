@@ -126,12 +126,64 @@
             </div>
           </div>
 
+          <!-- Gauge Insights -->
+          <div v-if="gaugeInsights.length > 0" class="gauge-insights">
+            <div v-for="g in gaugeInsights" :key="g.headline" class="gauge-analysis">
+              <h3 class="compatibility-headline">{{ g.headline }}</h3>
+
+              <div class="gauge-summary">
+                <div class="gauge-simulation">
+                  <GaugePreviewSvg
+                    :pattern="{
+                      weightLabel: pattern?.yarn_weight || 'Unknown',
+                      stsPer10: g.targetGauge,
+                      needles: pattern?.needles_mm ? formatNeedles(pattern.needles_mm) : undefined,
+                    }"
+                    :combo="{
+                      weightLabel: g.isSingleYarn ? 'Selected Yarn' : 'Combined Yarns',
+                      stsPer10: g.combinedGauge,
+                      needles: pattern?.needles_mm ? formatNeedles(pattern.needles_mm) : undefined,
+                    }"
+                    :scores="{
+                      weight: 100,
+                      gauge: Math.max(0, 100 - Math.abs(g.pct) * 2),
+                      skeins: 100,
+                      fiber: 100,
+                    }"
+                    :enable-demo="true"
+                    :initial-needle="
+                      pattern?.needles_mm ? formatNeedles(pattern.needles_mm) : '3.0mm'
+                    "
+                    :suggested-needle="
+                      pattern?.needles_mm
+                        ? formatNeedles(pattern.needles_mm).replace(/\d+\.?\d*/, (match) =>
+                            (parseFloat(match) + 0.5).toFixed(1),
+                          )
+                        : '3.5mm'
+                    "
+                    :show-summary="true"
+                    title="Gauge Comparison"
+                    subtitle="Pattern target vs. your yarn selection"
+                  />
+                </div>
+
+                <div class="swatch-guidance" v-html="g.swatchGuidance"></div>
+
+                <p class="gauge-caveat">
+                  Note: this is an estimate. Personal tension, stitch pattern, and blocking can all
+                  affect results.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div class="insights-summary">
             <h3>Summary</h3>
             <p>
               You've selected yarns for all required strands. Review the compatibility scores before
               deciding.
             </p>
+
             <div class="summary-actions">
               <button @click="clearSelection" class="clear-selection">Clear selection</button>
             </div>
@@ -155,6 +207,8 @@ import { useRoute } from 'vue-router'
 import patterns from '@/data/patterns'
 import yarns from '@/data/yarns'
 import { useYarnSuggestions } from '@/composables/useYarnSuggestions'
+import { useGaugeInsights } from '@/composables/useGaugeInsights'
+import GaugePreviewSvg from '@/components/GaugePreviewSvg.vue'
 import type { Pattern } from '@/types/domain'
 
 const route = useRoute()
@@ -167,6 +221,7 @@ const { columns } = useYarnSuggestions(pattern, yarns, 5)
 // Yarn selection state
 type Suggestion = { id: number; name: string; gauge_sts_per_10cm: number; score: number }
 const selectedYarns = ref<Record<string, Suggestion | undefined>>({})
+const { perColumn: gaugeInsights, overall: gaugeOverall } = useGaugeInsights(pattern, selectedYarns)
 
 const isSelectionComplete = computed(
   () => columns.value.length > 0 && columns.value.every((col) => !!selectedYarns.value[col.label]),
@@ -661,6 +716,83 @@ onUnmounted(() => {
   color: var(--color-text);
   font-size: 0.875rem;
   margin-bottom: 0.125rem;
+}
+
+.gauge-insights {
+  padding: 1rem;
+  background: var(--color-background);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  margin-bottom: 1.5rem;
+}
+
+.gauge-insights {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--color-background-soft);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.compatibility-headline {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Gauge estimate styles removed - now using GaugePreviewSvg component */
+
+.swatch-guidance {
+  margin: 0.75rem 0 1rem 0;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  font-weight: normal;
+}
+
+.gauge-simulation {
+  margin: 1rem 0;
+}
+
+.gauge-caveat {
+  margin: 1rem 0 0 0;
+  color: var(--color-text-mute);
+  font-size: 0.9rem;
+  font-style: normal;
+  opacity: 0.8;
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.75rem;
+}
+
+.insights-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.insights-list li {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-background-soft);
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+}
+
+.insights-list li:last-child {
+  margin-bottom: 0;
+}
+
+.insights-list strong {
+  color: var(--color-heading);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.insights-list span {
+  color: var(--color-text);
+  font-size: 0.875rem;
+  line-height: 1.4;
 }
 
 .insights-summary {

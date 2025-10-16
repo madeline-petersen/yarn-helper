@@ -9,14 +9,13 @@
 
 a {
   text-decoration: none;
-  color: hsla(220, 60%, 45%, 1);
+  color: hsla(220, 70%, 50%, 1);
   transition: 0.4s;
-  padding: 3px;
 }
 
 @media (hover: hover) {
   a:hover {
-    background-color: hsla(220, 60%, 45%, 0.2);
+    background-color: hsla(220, 70%, 50%, 0.2);
   }
 }
 
