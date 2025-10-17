@@ -696,7 +696,7 @@ onUnmounted(() => {
 /* Yarn columns layout */
 .yarn-columns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, 1fr);
   gap: 1.5rem;
   background: var(--color-background-soft);
   padding: 1.5rem;
@@ -846,7 +846,7 @@ onUnmounted(() => {
 
 .selected-yarns-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, 1fr);
   gap: 1.5rem;
 }
 
