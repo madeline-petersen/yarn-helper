@@ -100,7 +100,7 @@
                   <span v-if="suggestion.weight"> • {{ suggestion.weight }}</span>
                 </div>
                 <div class="yarn-yardage">{{ suggestion.yardage_per_skein }} yards per skein</div>
-                <div>Score: {{ suggestion.score }}</div>
+                <div>Compatibility Score: {{ suggestion.score }}</div>
               </button>
               <div v-if="col.suggestions.length === 0" class="empty-column">—</div>
             </div>
