@@ -222,4 +222,4 @@ This project uses AI assistance for several components, documented in code comme
 - **E2E Tests**: Playwright test scaffolding for all test files
 - **Natural Language**: Pattern and summary description functions
 
-See `AI_USAGE.md` for detailed documentation of all AI-assisted sections.
+See [`AI_USAGE.md`](https://github.com/madeline-petersen/yarn-helper/blob/main/AI_USAGE.md) for detailed documentation of all AI-assisted sections.
