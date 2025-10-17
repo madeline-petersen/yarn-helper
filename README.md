@@ -2,6 +2,8 @@
 
 A Vue 3 application that helps knitters find compatible yarns for their patterns through intelligent gauge matching and visual swatch previews.
 
+[Live Demo](https://yarn-helper.vercel.app/)
+
 ## Overview
 
 Yarn Helper is a specialized tool for knitters that solves a common problem: finding the right yarn for a knitting pattern. The app analyzes knitting patterns, suggests compatible yarns based on gauge compatibility scoring, and provides visual swatch previews to help users understand how their yarn choices will affect the final fabric.
