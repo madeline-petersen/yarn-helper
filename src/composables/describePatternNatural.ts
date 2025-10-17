@@ -2,6 +2,10 @@
  *  AI-ASSISTED COMPOSABLE
  *  Natural language pattern descriptions generated with Claude 3.5 Sonnet (Anthropic).
  *  Logic and formatting manually reviewed.
+ *
+ *  Prompt: "Create a Vue 3 composable that generates natural language descriptions
+ *  of knitting patterns. Input: Pattern object with gauge, weight, needles, etc.
+ *  Output: Human-readable description string explaining the pattern details."
  * ============================================================= */
 import type { Pattern, YarnWeight } from '@/types/domain'
 import { YARN_WEIGHT_INFO } from '@/constants/yarn'

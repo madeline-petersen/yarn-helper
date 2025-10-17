@@ -1,7 +1,12 @@
-/**
- * AI-assisted code: This file was created and modified with AI assistance.
- * The skein calculation logic and TypeScript types were developed with AI support.
- */
+/* =============================================================
+ *  AI-ASSISTED COMPOSABLE
+ *  Skein calculation and yardage insights generated with Claude 3.5 Sonnet (Anthropic).
+ *  Mathematical formulas and Vue 3 integration manually reviewed.
+ *
+ *  Prompt: "Create a Vue 3 composable that calculates skein requirements and
+ *  yardage insights for knitting patterns. Input: pattern ref, selected yarns ref.
+ *  Output: computed skein counts, yardage analysis, and cost estimates."
+ * ============================================================= */
 import { computed, unref, type MaybeRef } from 'vue'
 import type { Pattern } from '@/types/domain'
 import { strandsFromPattern } from '@/utils/compatibility'

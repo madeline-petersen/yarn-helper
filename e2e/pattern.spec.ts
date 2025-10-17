@@ -1,7 +1,11 @@
 /* =============================================================
- *  AI-ASSISTED TEST
- *  Playwright/Vitest scaffold generated with Claude 3.5 Sonnet (Anthropic).
+ *  AI-ASSISTED E2E TEST
+ *  Pattern view rendering tests generated with Claude 3.5 Sonnet (Anthropic).
  *  Assertions, structure, and selectors manually reviewed.
+ *
+ *  Prompt: "Create Playwright e2e tests for pattern view functionality.
+ *  Input: Pattern ID, expected UI elements.
+ *  Output: Test cases for pattern rendering, navigation, and error states."
  * ============================================================= */
 import { test, expect } from '@playwright/test'
 

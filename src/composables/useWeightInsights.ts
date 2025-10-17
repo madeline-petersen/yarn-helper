@@ -1,3 +1,12 @@
+/* =============================================================
+ *  AI-ASSISTED COMPOSABLE
+ *  Weight compatibility analysis generated with Claude 3.5 Sonnet (Anthropic).
+ *  Yarn weight hierarchy logic and Vue 3 integration manually reviewed.
+ *
+ *  Prompt: "Create a Vue 3 composable that analyzes yarn weight compatibility
+ *  for multi-strand patterns. Input: pattern ref, selected yarns ref.
+ *  Output: computed weight insights with match levels and human-readable descriptions."
+ * ============================================================= */
 import { computed, unref, type MaybeRef } from 'vue'
 import type { Pattern } from '@/types/domain'
 import { WEIGHT_HIERARCHY } from '@/constants/yarn'

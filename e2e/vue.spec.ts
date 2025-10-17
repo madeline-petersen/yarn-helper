@@ -1,7 +1,11 @@
 /* =============================================================
- *  AI-ASSISTED TEST
- *  Playwright/Vitest scaffold generated with Claude 3.5 Sonnet (Anthropic).
+ *  AI-ASSISTED E2E TEST
+ *  Vue app integration tests generated with Claude 3.5 Sonnet (Anthropic).
  *  Assertions, structure, and selectors manually reviewed.
+ *
+ *  Prompt: "Create Playwright e2e tests for Vue app navigation flow.
+ *  Input: Home page, pattern navigation.
+ *  Output: Test cases for complete user journey and app functionality."
  * ============================================================= */
 import { test, expect } from '@playwright/test'
 

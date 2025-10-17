@@ -1,7 +1,12 @@
-/**
- * AI-assisted code: This file was created and modified with AI assistance.
- * Natural language summary descriptions generated with AI support.
- */
+/* =============================================================
+ *  AI-ASSISTED COMPOSABLE
+ *  Natural language summary generation created with Claude 3.5 Sonnet (Anthropic).
+ *  Template logic and Vue 3 integration manually reviewed.
+ *
+ *  Prompt: "Create a Vue 3 composable that generates natural language summaries
+ *  of yarn selection insights. Input: pattern ref, selected yarns ref, insights object.
+ *  Output: computed summary text with contextual advice and recommendations."
+ * ============================================================= */
 import { computed, type MaybeRef } from 'vue'
 import type { Pattern } from '@/types/domain'
 

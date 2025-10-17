@@ -1,12 +1,17 @@
+/* =============================================================
+ *  AI-ASSISTED COMPOSABLE
+ *  Gauge insights and compatibility analysis generated with Claude 3.5 Sonnet (Anthropic).
+ *  Mathematical calculations and Vue 3 integration manually reviewed.
+ *
+ *  Prompt: "Create a Vue 3 composable that analyzes gauge compatibility between
+ *  selected yarns and pattern requirements. Input: pattern ref, selected yarns ref.
+ *  Output: computed insights with combined gauge, differences, and swatch guidance."
+ * ============================================================= */
 import { computed, unref, type MaybeRef } from 'vue'
 import {
   gaugeDiff,
-  fabricNote,
-  needleHint,
-  swatchAdvice,
   combinedGauge,
   compatibilityHeadline,
-  swatchGuidance,
   contextualSwatchGuidance,
 } from '@/utils/gauge'
 import { strandsFromPattern } from '@/utils/compatibility'

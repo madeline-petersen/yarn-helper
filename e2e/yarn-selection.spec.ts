@@ -1,7 +1,11 @@
 /* =============================================================
- *  AI-ASSISTED E2E TESTS
- *  Tests for yarn selection functionality in PatternView
- *  Generated with Claude 3.5 Sonnet (Anthropic).
+ *  AI-ASSISTED E2E TEST
+ *  Yarn selection functionality tests generated with Claude 3.5 Sonnet (Anthropic).
+ *  Assertions, structure, and selectors manually reviewed.
+ *
+ *  Prompt: "Create Playwright e2e tests for yarn selection and insights.
+ *  Input: Pattern page, yarn selection interactions.
+ *  Output: Test cases for yarn selection, insights display, and user interactions."
  * ============================================================= */
 import { test, expect } from '@playwright/test'
 

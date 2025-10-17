@@ -1,7 +1,11 @@
 /* =============================================================
- *  AI-ASSISTED TEST
- *  Playwright/Vitest scaffold generated with Claude 3.5 Sonnet (Anthropic).
+ *  AI-ASSISTED E2E TEST
+ *  Keyboard navigation tests generated with Claude 3.5 Sonnet (Anthropic).
  *  Assertions, structure, and selectors manually reviewed.
+ *
+ *  Prompt: "Create Playwright e2e tests for keyboard accessibility.
+ *  Input: Tab navigation, Enter key interactions.
+ *  Output: Test cases for keyboard navigation and accessibility compliance."
  * ============================================================= */
 import { test, expect } from '@playwright/test'
 
