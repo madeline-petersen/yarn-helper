@@ -251,20 +251,20 @@
           <div class="insights-summary">
             <h3>Summary</h3>
 
-            <div v-if="isSelectionComplete" class="analysis-summary">
-              <div class="summary-item">
-                <strong>Weight:</strong> {{ weightInsight.headline.split(' — ')[0] }}
-              </div>
-              <div v-if="gaugeInsights.length > 0" class="summary-item">
-                <strong>Gauge:</strong> {{ gaugeInsights[0].headline }}
-              </div>
-              <div v-if="skeinInsights.length > 0" class="summary-item">
-                <strong>Skeins: </strong>
-                <span v-for="(insight, index) in skeinInsights" :key="insight.columnLabel">
-                  {{ insight.skeinsNeeded }} {{ insight.columnLabel
-                  }}<span v-if="index < skeinInsights.length - 1">, </span>
-                </span>
-              </div>
+            <div v-if="isSelectionComplete" class="summary-content">
+              <p v-if="summaryText" class="summary-text">{{ summaryText }}</p>
+            </div>
+
+            <!-- Gauge Status Indicator -->
+            <div
+              v-if="gaugeInsights.length > 0"
+              class="gauge-status-indicator"
+              :class="getGaugeStatusClass(avgCompatibilityScore)"
+              :aria-label="getGaugeStatusLabel(avgCompatibilityScore)"
+              :title="getGaugeStatusLabel(avgCompatibilityScore)"
+              role="img"
+            >
+              {{ getGaugeStatusEmoji(avgCompatibilityScore) }}
             </div>
           </div>
 
@@ -293,6 +293,7 @@ import { useYarnSuggestions } from '@/composables/useYarnSuggestions'
 import { useGaugeInsights } from '@/composables/useGaugeInsights'
 import { useWeightInsights } from '@/composables/useWeightInsights'
 import { useSkeinInsights } from '@/composables/useSkeinInsights'
+import { describeSummaryNatural } from '@/composables/describeSummaryNatural'
 import GaugePreviewSvg from '@/components/GaugePreviewSvg.vue'
 import type { Pattern } from '@/types/domain'
 
@@ -317,6 +318,43 @@ const { perColumn: gaugeInsights, overall: gaugeOverall } = useGaugeInsights(pat
 const { weightInsight } = useWeightInsights(pattern, selectedYarns)
 const skeinInsightsComputed = useSkeinInsights(pattern, selectedYarns)
 const skeinInsights = computed(() => skeinInsightsComputed.value.skeinInsights)
+
+// Calculate average compatibility score from selected yarns
+const avgCompatibilityScore = computed(() => {
+  if (!isSelectionComplete.value) return 0
+  const scores = Object.values(selectedYarns.value)
+    .filter(Boolean)
+    .map((yarn) => yarn!.score)
+  return scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0
+})
+
+// Generate natural language summary
+const summaryText = describeSummaryNatural(
+  pattern,
+  weightInsight,
+  gaugeInsights,
+  skeinInsights,
+  avgCompatibilityScore,
+)
+
+// Gauge status indicator functions based on compatibility score
+const getGaugeStatusEmoji = (score: number) => {
+  if (score >= 90) return '✅'
+  if (score >= 60) return '⚠️'
+  return '❌'
+}
+
+const getGaugeStatusClass = (score: number) => {
+  if (score >= 90) return 'gauge-excellent'
+  if (score >= 60) return 'gauge-close'
+  return 'gauge-poor'
+}
+
+const getGaugeStatusLabel = (score: number) => {
+  if (score >= 90) return 'Excellent gauge compatibility'
+  if (score >= 60) return 'Good gauge compatibility'
+  return 'Poor gauge compatibility'
+}
 
 // Extract the combined weight from the weight insight for display
 const combinedWeightLabel = computed(() => {
@@ -1049,7 +1087,8 @@ onUnmounted(() => {
 }
 
 .insights-summary {
-  padding: 1rem;
+  position: relative;
+  padding: 1rem 1rem 3rem;
   background: var(--color-background);
   border-radius: 8px;
   border: 1px solid var(--color-border);
@@ -1068,18 +1107,29 @@ onUnmounted(() => {
   line-height: 1.5;
 }
 
-.analysis-summary {
+.summary-content {
   margin: 1rem 0;
 }
 
-.summary-item {
-  margin: 0.25rem 0;
+.summary-text {
+  margin: 0 0 1rem 0;
   color: var(--color-text);
-  font-size: 0.9rem;
+  line-height: 1.6;
+  font-size: 1rem;
 }
 
-.summary-item strong {
-  color: var(--color-heading);
+.gauge-status-indicator {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border-radius: 50%;
+  transition: opacity 0.2s ease;
 }
 
 .summary-actions {

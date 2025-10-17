@@ -103,9 +103,9 @@ export function useWeightInsights(
       const direction = combinedIndex > patternIndex ? 'heavier' : 'lighter'
       headline = `${weightDescription} = ${combinedWeight} — a bit ${direction} than the pattern target (${patternWeight}).`
       if (combinedIndex > patternIndex) {
-        detail = `${togetherText}These ${yarnText} tend toward ${combinedWeight}. Expect a slightly thicker, denser fabric than the pattern's ${patternWeight} target.`
+        detail = `${togetherText}This ${yarnText} tends toward ${combinedWeight}. Expect a slightly thicker, denser fabric than the pattern's ${patternWeight} target.`
       } else {
-        detail = `${togetherText}These ${yarnText} tend toward ${combinedWeight}. Expect a slightly lighter, more fluid fabric than the pattern's ${patternWeight} target.`
+        detail = `${togetherText}This ${yarnText} tends toward ${combinedWeight}. Expect a slightly lighter, more fluid fabric than the pattern's ${patternWeight} target.`
       }
       matchLevel = 'close'
     } else {
@@ -113,9 +113,9 @@ export function useWeightInsights(
       const severity = Math.abs(patternIndex - combinedIndex) > 2 ? 'much' : 'noticeably'
       headline = `${weightDescription} = ${combinedWeight} — ${severity} ${direction} than the pattern target (${patternWeight}).`
       if (combinedIndex > patternIndex) {
-        detail = `${togetherText}These ${yarnText} behave like ${combinedWeight}. The fabric will be ${severity} thicker and denser than intended. Swatch to confirm drape and structure.`
+        detail = `${togetherText}This ${yarnText} behaves like ${combinedWeight}. The fabric will be ${severity} thicker and denser than intended. Swatch to confirm drape and structure.`
       } else {
-        detail = `${togetherText}These ${yarnText} behave like ${combinedWeight}. The fabric will be ${severity} lighter and more fluid than intended. Swatch to check drape and structure.`
+        detail = `${togetherText}This ${yarnText} behaves like ${combinedWeight}. The fabric will be ${severity} lighter and more fluid than intended. Swatch to check drape and structure.`
       }
       matchLevel = 'off'
     }
