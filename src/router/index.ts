@@ -15,6 +15,10 @@ const router = createRouter({
       component: () => import('../views/PatternView.vue'),
     },
   ],
+  scrollBehavior(to, from, savedPosition) {
+    // Always scroll to top on navigation
+    return { top: 0 }
+  },
 })
 
 export default router
