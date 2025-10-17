@@ -32,6 +32,7 @@ export function useYarnSuggestions(
           name: y.name,
           weight: y.weight,
           gauge_sts_per_10cm: y.gauge_sts_per_10cm,
+          yardage_per_skein: y.yardage_per_skein,
           score: gaugeCompatibilityScore(strand.gauge_sts_per_10cm, y.gauge_sts_per_10cm),
         }))
         .sort((a, b) => b.score - a.score)

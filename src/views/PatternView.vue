@@ -99,6 +99,7 @@
                   {{ suggestion.gauge_sts_per_10cm }} sts/10cm
                   <span v-if="suggestion.weight"> • {{ suggestion.weight }}</span>
                 </div>
+                <div class="yarn-yardage">{{ suggestion.yardage_per_skein }} yards per skein</div>
                 <div>Score: {{ suggestion.score }}</div>
               </button>
               <div v-if="col.suggestions.length === 0" class="empty-column">—</div>
@@ -118,30 +119,21 @@
         <div class="insights-content">
           <!-- Selected Strands -->
           <div v-if="isSelectionComplete" class="selected-strands">
-            <h3>
-              {{
-                Object.keys(selectedYarns).length === 1
-                  ? 'Your Selected Strand'
-                  : 'Your Selected Strands'
-              }}
-            </h3>
             <div class="selected-yarns-grid">
-              <div
-                v-for="(yarn, columnLabel) in selectedYarns"
-                :key="columnLabel"
-                class="selected-yarn"
-              >
-                <h3>
-                  {{ columnLabel }} (target:
-                  {{ columns.find((col) => col.label === columnLabel)?.targetGauge }} sts/10cm)
-                </h3>
+              <div v-for="column in columns" :key="column.label" class="selected-yarn">
+                <h3>{{ column.label }} (target: {{ column.targetGauge }} sts/10cm)</h3>
                 <div class="yarn-details">
-                  <strong>{{ yarn?.name }}</strong>
+                  <strong>{{ selectedYarns[column.label]?.name }}</strong>
                   <div>
-                    {{ yarn?.gauge_sts_per_10cm }} sts/10cm
-                    <span v-if="yarn?.weight"> • {{ yarn?.weight }}</span>
+                    {{ selectedYarns[column.label]?.gauge_sts_per_10cm }} sts/10cm
+                    <span v-if="selectedYarns[column.label]?.weight">
+                      • {{ selectedYarns[column.label]?.weight }}</span
+                    >
                   </div>
-                  <div>Compatibility Score: {{ yarn?.score }}</div>
+                  <div class="yarn-yardage">
+                    {{ selectedYarns[column.label]?.yardage_per_skein }} yards per skein
+                  </div>
+                  <div>Compatibility Score: {{ selectedYarns[column.label]?.score }}</div>
                 </div>
               </div>
             </div>
@@ -205,16 +197,55 @@
             </div>
           </div>
 
+          <!-- Skein Analysis -->
+          <div v-if="isSelectionComplete" class="skein-analysis">
+            <h3>Skein Analysis</h3>
+            <div v-if="skeinInsights.length > 0" class="skein-visualization">
+              <div class="yardage-info">
+                <div class="pattern-yardage">
+                  <strong>Pattern requires:</strong> {{ pattern?.required_yardage }} yards
+                  <span v-if="skeinInsights[0]?.isHeldTogether"> (per strand)</span>
+                </div>
+              </div>
+              <div class="strands-container">
+                <div
+                  v-for="insight in skeinInsights"
+                  :key="insight.columnLabel"
+                  class="skein-strand"
+                >
+                  <div class="skein-content">
+                    <div class="strand-label">{{ insight.columnLabel }}</div>
+                    <div class="skein-details">
+                      <strong>{{ insight.yarn.name }}</strong>
+                      <div class="yarn-yardage">
+                        {{ insight.yarn.yardage_per_skein }} yards per skein
+                      </div>
+                      <div class="skein-info">
+                        {{ insight.skeinsNeeded }} skein{{ insight.skeinsNeeded === 1 ? '' : 's' }}
+                        needed
+                        <div class="skein-count">
+                          <span
+                            v-for="n in Math.min(insight.skeinsNeeded, 10)"
+                            :key="n"
+                            class="skein-emoji"
+                            >🧶</span
+                          >
+                          <span v-if="insight.skeinsNeeded > 10"
+                            >+{{ insight.skeinsNeeded - 10 }}</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Fabric Analysis -->
           <div v-if="isSelectionComplete" class="fabric-analysis">
             <h3>Fabric Analysis</h3>
             <p>Fabric analysis coming soon...</p>
-          </div>
-
-          <!-- Skein Analysis -->
-          <div v-if="isSelectionComplete" class="skein-analysis">
-            <h3>Skein Analysis</h3>
-            <p>Skein analysis coming soon...</p>
           </div>
 
           <div class="insights-summary">
@@ -226,6 +257,13 @@
               </div>
               <div v-if="gaugeInsights.length > 0" class="summary-item">
                 <strong>Gauge:</strong> {{ gaugeInsights[0].headline }}
+              </div>
+              <div v-if="skeinInsights.length > 0" class="summary-item">
+                <strong>Skeins: </strong>
+                <span v-for="(insight, index) in skeinInsights" :key="insight.columnLabel">
+                  {{ insight.skeinsNeeded }} {{ insight.columnLabel
+                  }}<span v-if="index < skeinInsights.length - 1">, </span>
+                </span>
               </div>
             </div>
           </div>
@@ -254,6 +292,7 @@ import yarns from '@/data/yarns'
 import { useYarnSuggestions } from '@/composables/useYarnSuggestions'
 import { useGaugeInsights } from '@/composables/useGaugeInsights'
 import { useWeightInsights } from '@/composables/useWeightInsights'
+import { useSkeinInsights } from '@/composables/useSkeinInsights'
 import GaugePreviewSvg from '@/components/GaugePreviewSvg.vue'
 import type { Pattern } from '@/types/domain'
 
@@ -270,11 +309,14 @@ type Suggestion = {
   name: string
   weight: string
   gauge_sts_per_10cm: number
+  yardage_per_skein: number
   score: number
 }
 const selectedYarns = ref<Record<string, Suggestion | undefined>>({})
 const { perColumn: gaugeInsights, overall: gaugeOverall } = useGaugeInsights(pattern, selectedYarns)
 const { weightInsight } = useWeightInsights(pattern, selectedYarns)
+const skeinInsightsComputed = useSkeinInsights(pattern, selectedYarns)
+const skeinInsights = computed(() => skeinInsightsComputed.value.skeinInsights)
 
 // Extract the combined weight from the weight insight for display
 const combinedWeightLabel = computed(() => {
@@ -719,7 +761,8 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 3rem;
 }
 
 .insights-header h2 {
@@ -756,24 +799,13 @@ onUnmounted(() => {
 
 .selected-strands {
   background: var(--color-background-soft);
-  border: 1px solid var(--color-border);
   border-radius: 8px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
-}
-
-.selected-strands h3 {
-  margin: 0 0 0.5rem 0;
-  color: var(--color-heading);
-  font-size: 1.1rem;
-  font-weight: 600;
 }
 
 .selected-yarns-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 0.5rem;
 }
 
 .selected-yarn {
@@ -806,15 +838,6 @@ onUnmounted(() => {
   background: var(--color-background);
   border-radius: 8px;
   border: 1px solid var(--color-border);
-  margin-bottom: 1.5rem;
-}
-
-.gauge-insights {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: var(--color-background-soft);
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
 }
 
 .compatibility-headline {
@@ -835,11 +858,10 @@ onUnmounted(() => {
 }
 
 .weight-analysis {
-  background: var(--color-background-soft);
+  background: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
-  margin-bottom: 0.75rem;
 }
 
 .weight-analysis h3 {
@@ -860,11 +882,10 @@ onUnmounted(() => {
 }
 
 .fabric-analysis {
-  background: var(--color-background-soft);
+  background: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
 }
 
 .fabric-analysis h3 {
@@ -881,11 +902,10 @@ onUnmounted(() => {
 }
 
 .skein-analysis {
-  background: var(--color-background-soft);
+  background: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
 }
 
 .skein-analysis h3 {
@@ -899,6 +919,89 @@ onUnmounted(() => {
   margin: 0;
   color: var(--color-text);
   font-size: 0.95rem;
+}
+
+.skein-visualization {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.strands-container {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.skein-strand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-background-soft);
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  flex: 1;
+}
+
+.skein-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.strand-label {
+  font-weight: 600;
+  color: var(--color-heading);
+  font-size: 0.9rem;
+}
+
+.skein-count {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.skein-emoji {
+  font-size: 1.2rem;
+}
+
+.skein-details {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.skein-details strong {
+  display: block;
+  color: var(--color-heading);
+  margin-bottom: 0.25rem;
+}
+
+.skein-details div {
+  color: var(--color-text-mute);
+  font-size: 0.85rem;
+}
+
+.skein-info {
+  margin-top: 0.25rem;
+  font-weight: 500;
+  color: var(--color-text) !important;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pattern-yardage {
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.yarn-yardage {
+  color: var(--color-text-mute);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
 }
 
 .gauge-simulation {
@@ -947,7 +1050,7 @@ onUnmounted(() => {
 
 .insights-summary {
   padding: 1rem;
-  background: var(--color-background-mute);
+  background: var(--color-background);
   border-radius: 8px;
   border: 1px solid var(--color-border);
 }
@@ -982,7 +1085,6 @@ onUnmounted(() => {
 .summary-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 1rem;
 }
 
 /* Responsive layout */
@@ -993,6 +1095,12 @@ onUnmounted(() => {
 
   .selected-yarns-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .skein-strand {
+    flex: 1 1 100%;
   }
 }
 </style>
