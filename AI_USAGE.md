@@ -78,6 +78,11 @@ Throughout development, extensive use of Cursor's in-code AI assistance for:
 - **Type Definitions**: TypeScript type suggestions and interface completions
 - **Template Refactoring**: AI-assisted refactoring of template syntax and component structure
 
+### Additional AI Assistance
+
+- **Commit Messages**: AI-generated comprehensive commit messages based on git diff analysis
+- **Copy Writing**: All user-facing text and copy rewritten by AI from short prompts. Hence all the emdashes 😉
+
 ## Review Process
 
 All AI-assisted code was:
