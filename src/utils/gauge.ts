@@ -27,7 +27,7 @@ export function needleHint(diffSts: number) {
     : 'Consider a smaller needle if swatch is too loose.'
 }
 
-export function swatchAdvice(diffSts: number, pctDelta: number): string {
+export function swatchAdvice(diffSts: number): string {
   const abs = Math.abs(diffSts)
   if (abs === 0) return 'Swatch to confirm the theoretical match - individual tension varies.'
   if (abs <= 2) return 'Swatch to verify - small adjustments to needle size may be needed.'

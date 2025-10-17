@@ -208,36 +208,41 @@
                 </div>
               </div>
               <div class="strands-container">
-                <div
-                  v-for="insight in skeinInsights"
-                  :key="insight.columnLabel"
-                  class="skein-strand"
-                >
-                  <div class="skein-content">
-                    <div class="strand-label">{{ insight.columnLabel }}</div>
-                    <div class="skein-details">
-                      <strong>{{ insight.yarn.name }}</strong>
-                      <div class="yarn-yardage">
-                        {{ insight.yarn.yardage_per_skein }} yards per skein
-                      </div>
-                      <div class="skein-info">
-                        {{ insight.skeinsNeeded }} skein{{ insight.skeinsNeeded === 1 ? '' : 's' }}
-                        needed
-                        <div class="skein-count">
-                          <span
-                            v-for="n in Math.min(insight.skeinsNeeded, 10)"
-                            :key="n"
-                            class="skein-emoji"
-                            >🧶</span
-                          >
-                          <span v-if="insight.skeinsNeeded > 10"
-                            >+{{ insight.skeinsNeeded - 10 }}</span
-                          >
+                <template v-for="insight in skeinInsights" :key="insight?.columnLabel || 'null'">
+                  <div v-if="insight" class="skein-strand">
+                    <div class="skein-content">
+                      <div class="strand-label">{{ insight.columnLabel }}</div>
+                      <div class="skein-details">
+                        <strong>{{ insight.yarn.name }}</strong>
+                        <div class="yarn-yardage">
+                          {{ insight.yarn.yardage_per_skein }} yards per skein
+                        </div>
+                        <div class="skein-info">
+                          {{ insight.skeinsNeeded }} skein{{
+                            insight.skeinsNeeded === 1 ? '' : 's'
+                          }}
+                          needed
+                          <div class="skein-count">
+                            <span
+                              v-for="n in Math.min(insight.skeinsNeeded, 10)"
+                              :key="n"
+                              class="skein-emoji"
+                              >🧶</span
+                            >
+                            <span v-if="insight.skeinsNeeded > 10"
+                              >+{{ insight.skeinsNeeded - 10 }}</span
+                            >
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                  <div v-else class="skein-strand">
+                    <div class="skein-content">
+                      <div class="strand-label">No data available</div>
+                    </div>
+                  </div>
+                </template>
               </div>
             </div>
           </div>
@@ -314,10 +319,9 @@ type Suggestion = {
   score: number
 }
 const selectedYarns = ref<Record<string, Suggestion | undefined>>({})
-const { perColumn: gaugeInsights, overall: gaugeOverall } = useGaugeInsights(pattern, selectedYarns)
+const { perColumn: gaugeInsights } = useGaugeInsights(pattern, selectedYarns)
 const { weightInsight } = useWeightInsights(pattern, selectedYarns)
-const skeinInsightsComputed = useSkeinInsights(pattern, selectedYarns)
-const skeinInsights = computed(() => skeinInsightsComputed.value.skeinInsights)
+const { skeinInsights } = useSkeinInsights(pattern, selectedYarns)
 
 // Calculate average compatibility score from selected yarns
 const avgCompatibilityScore = computed(() => {
@@ -885,8 +889,6 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
-/* Gauge estimate styles removed - now using GaugePreviewSvg component */
-
 .swatch-guidance {
   margin: 0.75rem 0 1rem 0;
   color: var(--color-text);
@@ -1139,6 +1141,10 @@ onUnmounted(() => {
 
 /* Responsive layout */
 @media (max-width: 768px) {
+  .yarn-insights {
+    padding: 1.5rem;
+  }
+
   .yarn-columns {
     grid-template-columns: 1fr;
   }

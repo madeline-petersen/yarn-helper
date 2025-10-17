@@ -24,12 +24,12 @@ export function useSkeinInsights(
   patternRef: MaybeRef<Pattern | undefined>,
   selectedYarnsRef: MaybeRef<Record<string, Selection | undefined>>,
 ) {
-  return computed(() => {
+  const skeinInsights = computed(() => {
     const pattern = unref(patternRef)
     const selectedYarns = unref(selectedYarnsRef)
 
     if (!pattern?.required_yardage || pattern.required_yardage <= 0 || !selectedYarns) {
-      return { skeinInsights: [] }
+      return []
     }
 
     const isHeldTogether = pattern.held_with && pattern.held_with.length > 1
@@ -39,10 +39,13 @@ export function useSkeinInsights(
     const strands = strandsFromPattern(pattern)
     const columnOrder = strands.map((strand) => strand.label)
 
-    const skeinInsights = columnOrder
-      .map((columnLabel) => {
+    return columnOrder
+      .filter((columnLabel) => {
         const yarn = selectedYarns[columnLabel]
-        if (!yarn || !yarn.yardage_per_skein || yarn.yardage_per_skein <= 0) return null
+        return yarn && yarn.yardage_per_skein && yarn.yardage_per_skein > 0
+      })
+      .map((columnLabel) => {
+        const yarn = selectedYarns[columnLabel]!
 
         // For held-together patterns, yardage is per strand
         // For single-strand patterns, yardage is total
@@ -63,8 +66,7 @@ export function useSkeinInsights(
           isHeldTogether,
         }
       })
-      .filter(Boolean)
-
-    return { skeinInsights }
   })
+
+  return { skeinInsights }
 }

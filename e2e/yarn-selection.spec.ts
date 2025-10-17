@@ -37,16 +37,10 @@ test.describe('Yarn Selection', () => {
     // Verify the yarn is selected (has selected class)
     await expect(firstYarnOption).toHaveClass(/selected/)
 
-    // Check if there are multiple columns (some patterns have held_with)
-    const columns = page.locator('.yarn-column')
-    const columnCount = await columns.count()
-
-    if (columnCount > 1) {
-      // If multiple columns, select from the second column too
-      const secondColumnYarn = page.locator('.yarn-column').nth(1).locator('.yarn-option').first()
-      await secondColumnYarn.click()
-      await expect(secondColumnYarn).toHaveClass(/selected/)
-    }
+    // Select from second column if it exists
+    const secondColumnYarn = page.locator('.yarn-column').nth(1).locator('.yarn-option').first()
+    await secondColumnYarn.click()
+    await expect(secondColumnYarn).toHaveClass(/selected/)
 
     // Wait for insights section to appear (it should show after all columns are selected)
     await expect(page.getByText('🧶 Your Yarn Selection Insights 🧶')).toBeVisible({
@@ -80,15 +74,9 @@ test.describe('Yarn Selection', () => {
     const firstYarnOption = page.locator('.yarn-option').first()
     await firstYarnOption.click()
 
-    // Check if there are multiple columns and select from all if needed
-    const columns = page.locator('.yarn-column')
-    const columnCount = await columns.count()
-
-    if (columnCount > 1) {
-      // If multiple columns, select from the second column too
-      const secondColumnYarn = page.locator('.yarn-column').nth(1).locator('.yarn-option').first()
-      await secondColumnYarn.click()
-    }
+    // Select from second column
+    const secondColumnYarn = page.locator('.yarn-column').nth(1).locator('.yarn-option').first()
+    await secondColumnYarn.click()
 
     // Verify insights appear
     await expect(page.getByText('🧶 Your Yarn Selection Insights 🧶')).toBeVisible({
@@ -99,13 +87,13 @@ test.describe('Yarn Selection', () => {
     await page.getByText('Clear all').click()
 
     // Verify insights disappear
-    await expect(page.getByText('🧶 Your Yarn Selection Insights 🧶')).not.toBeVisible()
+    await expect(page.getByText('🧶 Your Yarn Selection Insights 🧶')).toBeHidden()
 
     // Verify yarn is no longer selected
     await expect(firstYarnOption).not.toHaveClass(/selected/)
 
     // Verify "Clear all" button disappears
-    await expect(page.getByText('Clear all')).not.toBeVisible()
+    await expect(page.getByText('Clear all')).toBeHidden()
   })
 
   test('shows appropriate guidance text for single vs multiple columns', async ({ page }) => {
@@ -121,15 +109,8 @@ test.describe('Yarn Selection', () => {
     // Wait for yarn suggestions to load
     await expect(page.getByText('Compatible Yarn Suggestions')).toBeVisible()
 
-    // Check the guidance text based on number of columns
-    const columns = page.locator('.yarn-column')
-    const columnCount = await columns.count()
-
-    if (columnCount === 1) {
-      await expect(page.getByText('Select a yarn to see insights')).toBeVisible()
-    } else {
-      await expect(page.getByText('Select one yarn from each column to see insights')).toBeVisible()
-    }
+    // Verify appropriate guidance text for multiple columns
+    await expect(page.getByText('Select one yarn from each column to see insights')).toBeVisible()
   })
 
   test('announces selection changes to screen readers', async ({ page }) => {
@@ -171,15 +152,9 @@ test.describe('Yarn Selection', () => {
     const firstYarnOption = page.locator('.yarn-option').first()
     await firstYarnOption.click()
 
-    // Check if there are multiple columns and select from all if needed
-    const columns = page.locator('.yarn-column')
-    const columnCount = await columns.count()
-
-    if (columnCount > 1) {
-      // If multiple columns, select from the second column too
-      const secondColumnYarn = page.locator('.yarn-column').nth(1).locator('.yarn-option').first()
-      await secondColumnYarn.click()
-    }
+    // Select from second column
+    const secondColumnYarn = page.locator('.yarn-column').nth(1).locator('.yarn-option').first()
+    await secondColumnYarn.click()
 
     // Wait for insights to appear
     await expect(page.getByText('🧶 Your Yarn Selection Insights 🧶')).toBeVisible({
@@ -281,14 +256,12 @@ test.describe('Yarn Selection', () => {
     await page.goto('/pattern/1')
     await page.waitForLoadState('domcontentloaded')
 
-    // Select yarns from all columns
-    const columns = page.locator('.yarn-column')
-    const columnCount = await columns.count()
+    // Select yarns from both columns
+    const firstColumnYarn = page.locator('.yarn-column').nth(0).locator('.yarn-option').first()
+    const secondColumnYarn = page.locator('.yarn-column').nth(1).locator('.yarn-option').first()
 
-    for (let i = 0; i < columnCount; i++) {
-      const yarnOption = page.locator('.yarn-column').nth(i).locator('.yarn-option').first()
-      await yarnOption.click()
-    }
+    await firstColumnYarn.click()
+    await secondColumnYarn.click()
 
     // Wait for insights to appear
     await expect(page.getByText('🧶 Your Yarn Selection Insights 🧶')).toBeVisible({
@@ -317,14 +290,12 @@ test.describe('Yarn Selection', () => {
     await page.goto('/pattern/1')
     await page.waitForLoadState('domcontentloaded')
 
-    // Select yarns from all columns
-    const columns = page.locator('.yarn-column')
-    const columnCount = await columns.count()
+    // Select yarns from both columns
+    const firstColumnYarn = page.locator('.yarn-column').nth(0).locator('.yarn-option').first()
+    const secondColumnYarn = page.locator('.yarn-column').nth(1).locator('.yarn-option').first()
 
-    for (let i = 0; i < columnCount; i++) {
-      const yarnOption = page.locator('.yarn-column').nth(i).locator('.yarn-option').first()
-      await yarnOption.click()
-    }
+    await firstColumnYarn.click()
+    await secondColumnYarn.click()
 
     // Wait for insights to appear
     await expect(page.getByText('🧶 Your Yarn Selection Insights 🧶')).toBeVisible({
@@ -350,14 +321,12 @@ test.describe('Yarn Selection', () => {
     await page.goto('/pattern/1')
     await page.waitForLoadState('domcontentloaded')
 
-    // Select yarns from all columns
-    const columns = page.locator('.yarn-column')
-    const columnCount = await columns.count()
+    // Select yarns from both columns
+    const firstColumnYarn = page.locator('.yarn-column').nth(0).locator('.yarn-option').first()
+    const secondColumnYarn = page.locator('.yarn-column').nth(1).locator('.yarn-option').first()
 
-    for (let i = 0; i < columnCount; i++) {
-      const yarnOption = page.locator('.yarn-column').nth(i).locator('.yarn-option').first()
-      await yarnOption.click()
-    }
+    await firstColumnYarn.click()
+    await secondColumnYarn.click()
 
     // Wait for insights to appear
     await expect(page.getByText('🧶 Your Yarn Selection Insights 🧶')).toBeVisible({
@@ -374,11 +343,5 @@ test.describe('Yarn Selection', () => {
     // Should show skein counts and yardage
     await expect(skeinSection.getByText(/\d+ skeins? needed/).first()).toBeVisible()
     await expect(skeinSection.getByText(/yards?/).first()).toBeVisible()
-
-    // Should show cost information if available (optional)
-    const hasCostInfo = (await skeinSection.getByText(/cost|price/).count()) > 0
-    if (hasCostInfo) {
-      await expect(skeinSection.getByText(/cost|price/)).toBeVisible()
-    }
   })
 })

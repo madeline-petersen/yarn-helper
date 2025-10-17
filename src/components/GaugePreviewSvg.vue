@@ -134,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, nextTick } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 type GaugeSide = {
   weightLabel: string
@@ -202,11 +202,6 @@ const comboRows = computed(() => Math.max(1, Math.round(comboRowsRaw.value)))
 const comboRowsEstimated = computed(() => props.combo.rowsPer10 == null)
 const comboCellW = computed(() => 200 / comboCols.value)
 const comboCellH = computed(() => 200 / comboRows.value)
-
-// Effective needle size for combo (use combo.needles if available, otherwise fall back to pattern needles)
-const effectiveComboNeedle = computed(() => {
-  return props.combo.needles || props.pattern.needles || '3.0mm'
-})
 
 // Validation
 const isValid = computed(() => {

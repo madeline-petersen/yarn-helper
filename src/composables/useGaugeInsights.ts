@@ -68,21 +68,5 @@ export function useGaugeInsights(
     }>
   })
 
-  const overall = computed(() => {
-    if (!perColumn.value.length) return null
-    const avgAbsPct =
-      Math.round(
-        (perColumn.value.reduce((a, c) => a + Math.abs(c.pct), 0) / perColumn.value.length) * 10,
-      ) / 10
-    const worst = perColumn.value.reduce((min, c) =>
-      Math.abs(c.pct) > Math.abs(min.pct) ? c : min,
-    )
-    return {
-      avgAbsPct,
-      worstDelta: worst.pct,
-      worstLabel: worst.headline,
-    }
-  })
-
-  return { perColumn, overall }
+  return { perColumn }
 }

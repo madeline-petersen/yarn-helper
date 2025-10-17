@@ -7,7 +7,7 @@
  *  of yarn selection insights. Input: pattern ref, selected yarns ref, insights object.
  *  Output: computed summary text with contextual advice and recommendations."
  * ============================================================= */
-import { computed, type MaybeRef } from 'vue'
+import { computed, unref, type MaybeRef } from 'vue'
 import type { Pattern } from '@/types/domain'
 
 type WeightInsight = {
@@ -43,11 +43,11 @@ export function describeSummaryNatural(
   avgCompatibilityScoreRef: MaybeRef<number>,
 ) {
   return computed(() => {
-    const pattern = patternRef.value
-    const weightInsight = weightInsightRef.value
-    const gaugeInsights = gaugeInsightsRef.value
-    const skeinInsights = skeinInsightsRef.value
-    const avgCompatibilityScore = avgCompatibilityScoreRef.value
+    const pattern = unref(patternRef)
+    const weightInsight = unref(weightInsightRef)
+    const gaugeInsights = unref(gaugeInsightsRef)
+    const skeinInsights = unref(skeinInsightsRef)
+    const avgCompatibilityScore = unref(avgCompatibilityScoreRef)
 
     if (!pattern || !weightInsight || !gaugeInsights.length || !skeinInsights.length) {
       return ''
@@ -69,7 +69,7 @@ export function describeSummaryNatural(
 
     // Skein requirements
     if (skeinInsights.length === 1) {
-      const insight = skeinInsights[0]
+      const insight = skeinInsights[0]!
       parts.push(
         `You'll need ${insight.skeinsNeeded} skein${insight.skeinsNeeded === 1 ? '' : 's'} of ${insight.yarn.name} (${insight.yarn.yardage_per_skein} yards each).`,
       )
