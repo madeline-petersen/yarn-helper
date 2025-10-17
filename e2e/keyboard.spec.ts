@@ -25,5 +25,6 @@ test('keyboard: tab to first pattern, open with Enter, go back with keyboard', a
   await page.keyboard.press('Enter')
 
   // Wait for the home page to load by checking for the heading
+  await page.waitForLoadState('domcontentloaded')
   await expect(page.getByRole('heading', { name: /yarn helper/i })).toBeVisible()
 })
